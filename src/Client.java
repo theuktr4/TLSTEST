@@ -1,32 +1,37 @@
 import javax.net.ssl.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.time.Duration;
+import java.time.Instant;
+
 
 public class Client implements Runnable {
     private String version;
     private int count;
-    private final int PORT = 8083;
+    private final int PORT = 8084;
     private String[] cipher_suites;
     private boolean sessionResumption;
 
     private SSLServerSocket serverSocket;
 
-    public Client(String tlsVersion,int count, boolean resumeSession) {
+    public Client(String tlsVersion, int count, boolean resumeSession) {
         this.version = tlsVersion;
         this.count = count;
         this.sessionResumption = resumeSession;
     }
 
+
     private SSLContext getContext() {
         SSLContext context = null;
         try {
-            InputStream stream = this.getClass().getResourceAsStream("/sslclienttrust");
+            InputStream stream = this.getClass().getResourceAsStream("/truststore");
             KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            char[] trustStorePassword = "]3!z2Tb?@EHu%d}Q".toCharArray();
+            char[] trustStorePassword = "passphrase".toCharArray();
             trustStore.load(stream, trustStorePassword);
             context = SSLContext.getInstance(version);
 
@@ -36,25 +41,31 @@ public class Client implements Runnable {
             context.init(null, managers, null);
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | KeyManagementException e) {
             e.printStackTrace();
+
         }
         return context;
     }
 
     public void startHandshake(SSLSocketFactory sf) throws IOException {
-        long startTime = -1;
+
         try (SSLSocket socket = createSocket(sf)) {
+
+            Instant start = Instant.now();
             //InputStream is = new BufferedInputStream(socket.getInputStream());
-            startTime = System.currentTimeMillis();
+
             socket.startHandshake();
+
+            Instant finish = Instant.now();
+            long timeElapsed = Duration.between(start, finish).toMillis();
+            System.out.println("Time Handshake " + timeElapsed);
         }
-        long endTime = System.currentTimeMillis();
-        long timeElapsed = endTime - startTime;
-        System.out.println("Time Handshake " + timeElapsed );
+
 
     }
 
     private SSLSocket createSocket(SSLSocketFactory sf) throws IOException {
         SSLSocket s = (SSLSocket) sf.createSocket("localhost", PORT);
+
         s.setEnabledProtocols(new String[]{version});
         //s.setEnabledCipherSuites(new String[]{"TLS_RSA_WITH_AES_128_CBC_SHA256"});
         return s;
@@ -62,13 +73,16 @@ public class Client implements Runnable {
 
     @Override
     public void run() {
-        SSLSocketFactory s = null;
-        if(sessionResumption){
-            s = getContext().getSocketFactory();
+
+
+        SSLSocketFactory s = null ;
+        if (sessionResumption) {
+            s = (SSLSocketFactory) SSLSocketFactory.getDefault();
         }
-        while(count>0){
+        while (count > 0) {
+
             try {
-                if(!sessionResumption){
+                if (!sessionResumption) {
                     s = getContext().getSocketFactory();
                 }
                 startHandshake(s);
@@ -78,6 +92,7 @@ public class Client implements Runnable {
                 e.printStackTrace();
                 count = 0;
             }
+
         }
 
     }
