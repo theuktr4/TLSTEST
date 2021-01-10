@@ -10,7 +10,7 @@ public class Client implements Runnable {
     private String version;
     private int count;
     private final int PORT = 8083;
-    private String[] cipher_suites;
+    private String[] cipher_suites = {"TLS_AES_128_GCM_SHA256"};
     private boolean sessionResumption;
 
     private SSLServerSocket serverSocket;
@@ -56,7 +56,7 @@ public class Client implements Runnable {
     private SSLSocket createSocket(SSLSocketFactory sf) throws IOException {
         SSLSocket s = (SSLSocket) sf.createSocket("localhost", PORT);
         s.setEnabledProtocols(new String[]{version});
-        //s.setEnabledCipherSuites(new String[]{"TLS_RSA_WITH_AES_128_CBC_SHA256"});
+        //s.setEnabledCipherSuites(cipher_suites);
         return s;
     }
 
