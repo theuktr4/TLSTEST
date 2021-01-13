@@ -29,9 +29,9 @@ public class Client implements Runnable {
     private SSLContext getContext() {
         SSLContext context = null;
         try {
-            InputStream stream = this.getClass().getResourceAsStream("/truststore");
+            InputStream stream = this.getClass().getResourceAsStream("/truststore.jks");
             KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            char[] trustStorePassword = "passphrase".toCharArray();
+            char[] trustStorePassword = "sebastian".toCharArray();
             trustStore.load(stream, trustStorePassword);
             context = SSLContext.getInstance(version);
 
@@ -73,8 +73,6 @@ public class Client implements Runnable {
 
     @Override
     public void run() {
-
-
         SSLSocketFactory s = null ;
         if (sessionResumption) {
             s = (SSLSocketFactory) SSLSocketFactory.getDefault();
