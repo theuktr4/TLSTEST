@@ -44,6 +44,7 @@ public class Server implements Runnable {
         try (SSLSocket socket = (SSLSocket) serverSocket.accept()) {
             socket.setEnabledProtocols(new String[]{version});
             socket.startHandshake();
+            //socket.getSession();
 
         }
 

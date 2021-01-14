@@ -46,6 +46,8 @@ public class Client implements Runnable {
             //InputStream is = new BufferedInputStream(socket.getInputStream());
             startTime = System.currentTimeMillis();
             socket.startHandshake();
+            //socket.getSession();
+            //Thread.sleep(100);
         }
         long endTime = System.currentTimeMillis();
         long timeElapsed = endTime - startTime;
